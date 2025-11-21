@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Heart For You 💖</title>
+
+    <!-- Google Love-letter Font -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Parisienne&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        margin: 0;
+        background: #ffd6e8;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        overflow: hidden;
+        color: #7a0034;
+        font-family: "Parisienne", cursive;
+        position: relative;
+      }
+
+      /* Heading */
+      #msg {
+        position: absolute;
+        top: 27%;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 64px;
+        font-weight: 400;
+        text-shadow: 0px 0px 15px rgba(255, 0, 80, 0.5);
+        z-index: 20;
+        animation: fadeDown 1s ease-out;
+        text-align: center;
+      }
+
+      /* Small subtitle */
+      #subMsg {
+        position: absolute;
+        top: 34%;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 22px;
+        opacity: 0.8;
+        z-index: 20;
+        text-align: center;
+        animation: fadeUp 1.4s ease-out;
+        width: 90%;
+        max-width: 520px;
+      }
+
+      /* Names inside heart */
+      #insideHeart {
+        position: absolute;
+        font-size: 40px;
+        text-shadow: 0 0 10px rgba(255, 120, 150, 0.8);
+        z-index: 30;
+        transform: translate(-50%, -50%);
+        animation: softPulse 3s ease-in-out infinite;
+        text-align: center;
+        pointer-events: none;
+      }
+
+      /* Falling roses */
+      .falling {
+        position: fixed;
+        top: -50px;
+        font-size: 30px;
+        animation: fall linear infinite;
+        opacity: 0.9;
+        pointer-events: none;
+        z-index: 2;
+      }
+      @keyframes fall {
+        0% {
+          transform: translateY(0);
+        }
+        100% {
+          transform: translateY(110vh) rotate(360deg);
+        }
+      }
+
+      canvas {
+        position: relative;
+        z-index: 5;
+      }
+
+      /* Tap button */
+      #tapBtn {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 12px 32px;
+        font-size: 24px;
+        color: white;
+        background: linear-gradient(135deg, #ff5d8f, #ff7fb0);
+        border-radius: 40px;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 4px 20px rgba(255, 0, 80, 0.45);
+        transition: 0.2s;
+        font-family: "Parisienne", cursive;
+        z-index: 50;
+      }
+      #tapBtn:active {
+        transform: translateX(-50%) scale(0.96);
+      }
+
+      /* Message under button */
+      #tapMessage {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 85%;
+        max-width: 420px;
+        text-align: center;
+        font-size: 22px;
+        opacity: 0;
+        transition: opacity 0.4s;
+        z-index: 50;
+      }
+
+      /* Floating hearts */
+      .burst-heart {
+        position: fixed;
+        font-size: 26px;
+        animation: floatUp 2.5s ease-out forwards;
+        pointer-events: none;
+        z-index: 40;
+      }
+      @keyframes floatUp {
+        0% {
+          transform: translateY(0) scale(0.8);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(-180px) scale(1.4);
+          opacity: 0;
+        }
+      }
+
+      /* Soft animations */
+      @keyframes fadeDown {
+        from {
+          opacity: 0;
+          transform: translate(-50%, -15px);
+        }
+        to {
+          opacity: 1;
+          transform: translate(-50%, 0);
+        }
+      }
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translate(-50%, 10px);
+        }
+        to {
+          opacity: 1;
+          transform: translate(-50%, 0);
+        }
+      }
+      @keyframes softPulse {
+        0%,
+        100% {
+          transform: translate(-50%, -50%) scale(1);
+        }
+        50% {
+          transform: translate(-50%, -50%) scale(1.03);
+        }
+      }
+
+      @media (max-width: 600px) {
+        #msg {
+          font-size: 42px;
+          top: 23%;
+        }
+        #subMsg {
+          font-size: 16px;
+          top: 30%;
+        }
+        #insideHeart {
+          font-size: 30px;
+        }
+        #tapBtn {
+          font-size: 20px;
+        }
+        #tapMessage {
+          font-size: 18px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Flowers -->
+    <div id="fall-container"></div>
+
+    <!-- Heart Canvas -->
+    <canvas id="canvas"></canvas>
+
+    <!-- Heading -->
+    <div id="msg">With Love… 💕</div>
+
+    <!-- Subtitle -->
+    <div id="subMsg">
+      For the girl whose heart beats softly, even on the days it’s tired.
+    </div>
+
+    <!-- Names -->
+    <div id="insideHeart">Mushay + Sarwar 💕</div>
+
+    <!-- Tap button -->
+    <button id="tapBtn">Tap Me 💗</button>
+
+    <!-- Typed message -->
+    <div id="tapMessage"></div>
+
+    <script>
+      /* ------------------ Falling Roses ------------------ */
+      const fallContainer = document.getElementById("fall-container");
+      const flowers = ["🌹", "🌸", "💮", "🌺", "🌷"];
+
+      function createFall() {
+        const div = document.createElement("div");
+        div.classList.add("falling");
+        div.innerText = flowers[Math.floor(Math.random() * flowers.length)];
+        div.style.left = Math.random() * 100 + "vw";
+        div.style.animationDuration = 5 + Math.random() * 4 + "s";
+        div.style.fontSize = 22 + Math.random() * 12 + "px";
+        fallContainer.appendChild(div);
+        setTimeout(() => div.remove(), 12000);
+      }
+      setInterval(createFall, 250);
+
+      /* ------------------ Heart Animation ------------------ */
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+
+      const insideHeartEl = document.getElementById("insideHeart");
+      const tapBtn = document.getElementById("tapBtn");
+      const tapMessage = document.getElementById("tapMessage");
+
+      function positionElements() {
+        const cx = window.innerWidth / 2;
+        const cy = window.innerHeight / 2 + 40;
+
+        insideHeartEl.style.left = cx + "px";
+        insideHeartEl.style.top = cy - 10 + "px";
+
+        tapBtn.style.left = cx + "px";
+        tapBtn.style.top = cy + 240 + "px"; /* FIXED PERFECT POSITION */
+
+        tapMessage.style.left = cx + "px";
+        tapMessage.style.top = cy + 320 + "px";
+      }
+
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        positionElements();
+      }
+      resize();
+      window.addEventListener("resize", resize);
+
+      function heartA(k) {
+        return 15 * Math.sin(k) ** 3;
+      }
+      function heartB(k) {
+        return (
+          12 * Math.cos(k) -
+          5 * Math.cos(2 * k) -
+          2 * Math.cos(3 * k) -
+          Math.cos(4 * k)
+        );
+      }
+
+      const heartPoints = [];
+      for (let k = 0; k < Math.PI * 2; k += 0.02) heartPoints.push(k);
+
+      function drawHeart(time) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const cx = window.innerWidth / 2;
+        const cy = window.innerHeight / 2 + 40;
+        const scale = 18;
+        const pulse = 1 + 0.12 * Math.sin(time * 0.005);
+
+        ctx.save();
+        ctx.shadowColor = "rgba(255,0,80,0.7)";
+        ctx.shadowBlur = 25;
+
+        for (let k of heartPoints) {
+          const x = heartA(k) * scale * pulse + cx;
+          const y = -heartB(k) * scale * pulse + cy;
+          ctx.beginPath();
+          ctx.arc(x, y, 2.8, 0, Math.PI * 2);
+          ctx.fillStyle = "red";
+          ctx.fill();
+        }
+
+        ctx.restore();
+      }
+      function animate(t) {
+        drawHeart(t);
+        requestAnimationFrame(animate);
+      }
+      animate();
+
+      /* ------------------ Typewriter Messages ------------------ */
+
+      const messages = [
+        `Thori si thakawat, thora sa dard…  
+or beech mein apko sambhaltay hue mera dil. 💗`,
+
+        `You’ve been sick for a month now, sweetheart,  
+and yet you still say, “I’m fine, it’s nothing.”  
+You hide your pain behind soft smiles  
+as if the world won’t notice the weight in your eyes.`,
+
+        `I don’t love you only in your strong days.  
+I love you in the fragile ones too—  
+when your messages are short, your replies slow,  
+and your heart is just trying to keep up. 💞`,
+
+        `I want to sit close enough to feel your tired breathing,  
+saying nothing… just letting you know  
+that you’re not going through this alone.`,
+
+        `Your heart is safe here… slowly, quietly, naturally.  
+You don’t have to open up quickly…  
+I’ll stay as long as it takes. 🤍`,
+      ];
+
+      let msgIndex = 0;
+      let typeInterval;
+
+      function typeText(text) {
+        clearInterval(typeInterval);
+        tapMessage.innerHTML = "";
+        tapMessage.style.opacity = 1;
+
+        let i = 0;
+        typeInterval = setInterval(() => {
+          tapMessage.innerHTML = text.slice(0, i).replace(/\n/g, "<br>");
+          i++;
+          if (i > text.length) clearInterval(typeInterval);
+        }, 35);
+      }
+
+      tapBtn.addEventListener("click", () => {
+        const text =
+          msgIndex < messages.length
+            ? messages[msgIndex]
+            : "I’m still here… always. 💞";
+
+        typeText(text);
+        if (msgIndex < messages.length) msgIndex++;
+
+        const rect = tapBtn.getBoundingClientRect();
+        const baseTop = rect.top + window.scrollY;
+
+        for (let i = 0; i < 8; i++) {
+          const heart = document.createElement("div");
+          heart.classList.add("burst-heart");
+          heart.textContent = "💖";
+          heart.style.left = 45 + Math.random() * 10 + "vw";
+          heart.style.top = baseTop - 15 + "px";
+          heart.style.fontSize = 20 + Math.random() * 10 + "px";
+
+          document.body.appendChild(heart);
+          setTimeout(() => heart.remove(), 2500);
+        }
+      });
+    </script>
+  </body>
+</html>
